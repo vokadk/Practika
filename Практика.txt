@@ -1,0 +1,716 @@
+  using System;
+ using System.Collections.Generic;
+ using System.ComponentModel;
+ using System.Data;
+ using System.Drawing;
+ using System.Linq;
+ using System.Text;
+ using System.Threading.Tasks;
+ using System.Windows.Forms;
+
+  namespace УП_Белоруков
+ {
+    public partial class MainForm : Form
+    {
+        public MainForm()
+        {
+            InitializeComponent();
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void exit_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Process.GetCurrentProcess().Kill();
+        }
+
+        private void командыToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FormTeams ft = new FormTeams();
+            ft.Show();
+            this.Hide();
+        }
+
+        private void турнирыToolStripMenuItem_Click(object sender, EventArgs e)
+        { }
+
+        private void хоккейРоссииToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void чемпионыToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void чемпионатыСтраныToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            DataBank.champ = 1;
+            FormTournament ftt = new FormTournament();
+            ftt.Show();
+            this.Hide();
+        }
+
+        private void чемпионатыМираToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            DataBank.champ = 2;
+            FormTournament ftt = new FormTournament();
+            ftt.Show();
+            this.Hide();
+        }
+
+        private void олимпийскиеИгрыToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            DataBank.champ = 3;
+            FormTournament ftt = new FormTournament();
+            ftt.Show();
+            this.Hide();
+        }
+
+        private void участиеВМеждународныхСоревнованияхToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            DataBank.hr = 1;
+            FormHocRus fhr = new FormHocRus();
+            fhr.Show();
+            this.Hide();
+        }
+
+        private void системаПодготовкиСпортсменовToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            DataBank.hr = 2;
+            FormHocRus fhr = new FormHocRus();
+            fhr.Show();
+            this.Hide();
+        }
+
+        private void филиалыToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            DataBank.hr = 3;
+            FormHocRus fhr = new FormHocRus();
+            fhr.Show();
+            this.Hide();
+        }
+
+        private void рекордсменыСредиАтакующихToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            DataBank.rec = 1;
+            FormRec fr = new FormRec();
+            fr.Show();
+            this.Hide();
+        }
+
+        private void рекордсменыСредиЗащитниковToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            DataBank.rec = 2;
+            FormRec fr = new FormRec();
+            fr.Show();
+            this.Hide();
+        }
+    }
+}
+
+
+    public partial class FormTeams : Form
+    {
+        DataBank db = new DataBank();
+        public FormTeams()
+        {
+            InitializeComponent();
+        }
+        private void CreateColumnsTeams() //Метод создания столбцов в DataGridView
+        {
+
+            TeamGrid.Columns.Add("ID", "ID Команды");
+            TeamGrid.Columns.Add("name", "Название");
+            TeamGrid.Columns.Add("season", "Страна");
+            TeamGrid.Columns.Add("gold", "Город");
+            TeamGrid.Columns.Add("silver", "Арена");
+            TeamGrid.Columns.Add("bronze", "Титулов");
+            TeamGrid.Columns.Add("bronze", "Статус");
+
+        }
+
+        private void ReadSingleRowTeam(DataGridView dgw, IDataRecord record) //Метод установления типов данных столбцов DataGridView
+        {
+
+            dgw.Rows.Add(record.GetInt32(0), record.GetString(1), record.GetString(2), record.GetString(3), record.GetString(4),
+            record.GetInt32(5), record.GetString(6), RowState.ModifiedNew);
+
+        }
+        private void Teams(DataGridView dgw) //Метод обновления и заполнения DataGridView
+        {
+
+            dgw.Rows.Clear();
+            string query = $"select * from Teams";
+            SqlCommand command = new SqlCommand(query, db.getConnection());
+            db.openConnection();
+            SqlDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                ReadSingleRowTeam(dgw, reader);
+            }
+            reader.Close();
+
+        }
+        private void Search(DataGridView dgw) //Метод поиска по ID
+        {
+
+            string idd = TeamSearch.Text;
+            dgw.Rows.Clear();
+            string search = $"select * from Teams where Название like '" + TeamSearch.Text + "%'"; //Запрос на поиск
+            SqlCommand com = new SqlCommand(search, db.getConnection());
+            db.openConnection();
+            SqlDataReader reader = com.ExecuteReader();
+            while (reader.Read())
+            {
+                ReadSingleRowTeam(dgw, reader);
+            }
+            reader.Close();
+
+        }
+        private void Back_Click(object sender, EventArgs e)
+        {
+            MainForm mf = new MainForm();
+            mf.Show();
+            this.Hide();
+        }
+
+        private void Form6_Load(object sender, EventArgs e)
+        {
+            CreateColumnsTeams();
+            Teams(TeamGrid);
+        }
+
+        private void SearchButton_Click(object sender, EventArgs e)
+        {
+            if (TeamSearch.Text != "")
+            {
+
+                Search(TeamGrid);
+
+            }
+            else
+                MessageBox.Show("Введите данные!", "Ошибка",
+                     MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+
+        }
+
+        private void Refresh_Click(object sender, EventArgs e)
+        {
+            Teams(TeamGrid);
+            TeamSearch.Text = "";
+        }
+    }
+}
+
+
+
+    enum RowState //Метод перечисления
+    {
+        Existed,
+        New,
+        Modified,
+        ModifiedNew,
+        Deleted
+    }
+    public partial class FormTournament : Form
+    {
+        DataBank db = new DataBank();
+        public FormTournament()
+        {
+            InitializeComponent();
+        }
+        private void CreateColumnsChamp() //Метод создания столбцов в DataGridView
+        {
+            if (DataBank.champ == 1)
+            {
+                ChampGridView.Columns.Add("ID", "ID Чемпионата");
+                ChampGridView.Columns.Add("name", "Наименование команды");
+                ChampGridView.Columns.Add("season", "Сезон");
+                ChampGridView.Columns.Add("gold", "Золото");
+                ChampGridView.Columns.Add("silver", "Серебро");
+                ChampGridView.Columns.Add("bronze", "Бронза");
+            }
+            if (DataBank.champ == 2)
+            {
+                ChampGridView.Columns.Add("ID", "ID Чемпионата");
+                ChampGridView.Columns.Add("year", "Год");
+                ChampGridView.Columns.Add("gold", "Золото");
+                ChampGridView.Columns.Add("silver", "Серебро");
+                ChampGridView.Columns.Add("bronze", "Бронза");
+                ChampGridView.Columns.Add("place", "Место проведения");
+            }
+            if (DataBank.champ == 3)
+            {
+                ChampGridView.Columns.Add("ID", "ID Чемпионата");
+                ChampGridView.Columns.Add("year", "Год");
+                ChampGridView.Columns.Add("gold", "Чемпион");
+                ChampGridView.Columns.Add("silver", "2-е место");
+                ChampGridView.Columns.Add("bronze", "3-е место");
+                ChampGridView.Columns.Add("place", "Место проведения");
+            }
+        }
+        private void ReadSingleRowChamp(DataGridView dgw, IDataRecord record) //Метод установления типов данных столбцов DataGridView
+        {
+            if (DataBank.champ == 1)
+            {
+                dgw.Rows.Add(record.GetInt32(0), record.GetString(1), record.GetString(2), record.GetString(3), record.GetString(4),
+                record.GetString(5), RowState.ModifiedNew);
+            }
+            if (DataBank.champ == 2)
+            {
+                dgw.Rows.Add(record.GetInt32(0), record.GetInt32(1), record.GetString(2), record.GetString(3), record.GetString(4),
+                record.GetString(5), RowState.ModifiedNew);
+            }
+            if (DataBank.champ == 3)
+            {
+                dgw.Rows.Add(record.GetInt32(0), record.GetInt32(1), record.GetString(2), record.GetString(3), record.GetString(4),
+                record.GetString(5), RowState.ModifiedNew);
+            }
+        }
+        private void Champ(DataGridView dgw) //Метод обновления и заполнения DataGridView
+        {
+            if (DataBank.champ == 1)
+            {
+                dgw.Rows.Clear();
+                string query = $"select * from Champ_ru";
+                SqlCommand command = new SqlCommand(query, db.getConnection());
+                db.openConnection();
+                SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    ReadSingleRowChamp(dgw, reader);
+                }
+                reader.Close();
+            }
+            if (DataBank.champ == 2)
+            {
+                dgw.Rows.Clear();
+                string query = $"select * from Champ_world";
+                SqlCommand command = new SqlCommand(query, db.getConnection());
+                db.openConnection();
+                SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    ReadSingleRowChamp(dgw, reader);
+                }
+                reader.Close();
+            }
+            if (DataBank.champ == 3)
+            {
+                dgw.Rows.Clear();
+                string query = $"select * from Champ_olimp";
+                SqlCommand command = new SqlCommand(query, db.getConnection());
+                db.openConnection();
+                SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    ReadSingleRowChamp(dgw, reader);
+                }
+                reader.Close();
+            }
+        }
+        private void Search(DataGridView dgw) //Метод поиска по ID
+        {
+            if (DataBank.champ == 1)
+            {
+                string idd = SearchBox.Text;               
+                dgw.Rows.Clear();
+                string search = $"select * from Champ_ru where Сезон like '" + SearchBox.Text + "%'"; //Запрос на поиск
+                SqlCommand com = new SqlCommand(search, db.getConnection());
+                db.openConnection();
+                SqlDataReader reader = com.ExecuteReader();
+                while (reader.Read())
+                {
+                    ReadSingleRowChamp(dgw, reader);
+                }
+                reader.Close();
+            }
+            if (DataBank.champ == 2)
+            {
+                string idd = SearchBox.Text;
+                int god = Int32.Parse(SearchBox.Text);
+                dgw.Rows.Clear();
+                string search = $"select * from Champ_world where Год like '" + god + "%'"; //Запрос на поиск
+                SqlCommand com = new SqlCommand(search, db.getConnection());
+                db.openConnection();
+                SqlDataReader reader = com.ExecuteReader();
+                while (reader.Read())
+                {
+                    ReadSingleRowChamp(dgw, reader);
+                }
+                reader.Close();
+            }
+            if (DataBank.champ == 3)
+            {
+                string idd = SearchBox.Text;
+                int god = Int32.Parse(SearchBox.Text);
+                dgw.Rows.Clear();
+                string search = $"select * from Champ_olimp where Год like '" + god + "%'"; //Запрос на поиск
+                SqlCommand com = new SqlCommand(search, db.getConnection());
+                db.openConnection();
+                SqlDataReader reader = com.ExecuteReader();
+                while (reader.Read())
+                {
+                    ReadSingleRowChamp(dgw, reader);
+                }
+                reader.Close();
+            }
+        }
+        private void Back_Click(object sender, EventArgs e)
+        {
+            MainForm mf = new MainForm();
+            mf.Show();
+            this.Hide();
+        }
+        int ch;
+        private void FormTournament_Load(object sender, EventArgs e)
+        {
+            CreateColumnsChamp();
+            Champ(ChampGridView);
+            if (DataBank.champ == 1)
+            {
+                label1.Text = "Чемпионаты Страны";     
+            }
+            if (DataBank.champ == 2)
+            {
+                label1.Text = "Чемпионаты Мира";
+            }
+            if (DataBank.champ == 3)
+            {
+                label1.Text = "Олимпийские игры";
+            }
+            ch = DataBank.champ;
+        }
+
+        private void label6_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void ChampSearch_Click(object sender, EventArgs e)
+        {
+           
+                if (SearchBox.Text != "")
+                {
+                    if (double.TryParse(SearchBox.Text, out double resulta))
+                    {
+                        Search(ChampGridView);
+                    }
+                else
+                    MessageBox.Show("Введите корректные данные!", "Ошибка",
+                         MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                }
+                else
+                    MessageBox.Show("Введите данные!", "Ошибка",
+                         MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+        }
+
+        private void Refresh_Click(object sender, EventArgs e)
+        {
+            Champ(ChampGridView);
+            SearchBox.Text = "";
+        }
+    }
+}
+
+
+
+    public partial class FormHocRus : Form
+    {
+        public FormHocRus()
+        {
+            InitializeComponent();
+        }
+        string ums = "В проводимых ежегодно чемпионатах мира регулярно принимают участие национальная (27-кратный чемпион мира и 9-кратный победитель Зимних Олимпийских игр), женская (3-й призер чемпионатов мира 2001 и 2013 годов), молодежная (12-кратный чемпион мира) и юниорская (до 18 лет – чемпион мира 2001, 2004 и 2007 годов) сборные.\r\n\r\nСреди основных целей деятельности ФХР – организация и проведение международных соревнований на территории Российской Федерации. Специалисты и любители хоккея нашей страны смогли наблюдать яркие и захватывающие поединки чемпионатов мира, чемпионатов мира среди молодежных команд, юниоров, чемпионат Европы среди женщин, традиционные декабрьские турниры национальных сборных, международные турниры молодежных и юношеских сборных. Широка география проведения этих соревнований: Москва, Санкт-Петербург, Подольск, Ярославль, Магнитогорск, Тюмень. Все турниры прошли на высоком организационном уровне и оставили добрую память у организаторов, гостей и участников соревнований, любителей спорта. Не случайно Россия принимала чемпионат мира 2007 года, а в Санкт-Петербурге на протяжении четырёх лет проходили финальные турниры Кубка Чемпионов.";
+        string sps = "ФХР постоянно совершенствует систему подготовки спортсменов высшей квалификации, обеспечивает мероприятия по подготовке к участию в международных спортивных соревнованиях и участию в них сборных и клубных команд Российской Федерации.\r\nФХР осуществляет подбор и расстановку тренерских кадров для работы в сборных командах России, проводит работу по подготовке, переподготовке и аттестации тренеров, судей и других специалистов хоккея.\r\nВозобновлена работа Высшей школы тренеров. Налажено плодотворное взаимодействие между Федерацией и спортивными вузами.\r\nФХР оказывает содействие в организации научных исследований в области теории и методики хоккея, выпуске методической литературы.";
+        string fi = "ФХР уделяет особое внимание развитию, популяризации и пропаганде хоккея в субъектах Российской Федерации, повышению его роли во всестороннем и гармоничном развитии личности, формированию здорового образа жизни населения, оказанию практической и методической помощи региональным хоккейным центрам, клубам, детско-юношеским спортивным школам, коллективам физической культуры в субъектах России, изъявивших желание культивировать хоккей.\r\n\r\nВ целях организационно-методического обеспечения взаимодействия региональных спортивных федераций, организации и проведения соревнований межрегионального уровня, а также для решения других вопросов функционирования хоккея в регионах открыты филиалы ФХР, которые располагаются в Ленинградской и Московской областях, а также в Самаре, Екатеринбурге, Хабаровске, Новосибирске и Сочи. ";
+        private void FormHocRus_Load(object sender, EventArgs e)
+        {
+            if (DataBank.hr == 1)
+            {
+                label1.Text = "Участие В Международных Соревнованиях";
+                label2.Text = ums;
+            }
+            if (DataBank.hr == 2)
+            {
+                label1.Text = "Система Подготовки Спортсменов";
+                label2.Text = sps;
+            }
+            if (DataBank.hr == 3)
+            {
+                label1.Text = "Филиалы";
+                label2.Text = fi;
+            }
+        }
+
+        private void Back_Click(object sender, EventArgs e)
+        {
+            MainForm mf = new MainForm();
+            mf.Show();
+            this.Hide();
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+
+        }
+    }
+}
+
+
+
+    public partial class FormRec : Form
+    {
+        DataBank db = new DataBank();
+        public FormRec()
+        {
+            InitializeComponent();
+        }
+        private void CreateColumnsStat() //Метод создания столбцов в DataGridView
+        {
+            if (DataBank.rec == 1)
+            {
+                StatView.Columns.Add("ID", "ID Игрока");
+                StatView.Columns.Add("name", "Игрок");
+                StatView.Columns.Add("point", "Очки");
+                StatView.Columns.Add("goals", "Голы");
+                StatView.Columns.Add("assist", "Передачи");
+                StatView.Columns.Add("games", "Игры");
+            }
+            if (DataBank.rec == 2)
+            {
+                StatView.Columns.Add("ID", "ID Игрока");
+                StatView.Columns.Add("year", "Игрок");
+                StatView.Columns.Add("gold", "Кэффициент надёжности");
+                StatView.Columns.Add("silver", "Игры");
+                StatView.Columns.Add("bronze", "Пропущено шайб");
+                StatView.Columns.Add("place", "Время на площадке (минут)");
+            }          
+        }
+        private void ReadSingleRowChamp(DataGridView dgw, IDataRecord record) //Метод установления типов данных столбцов DataGridView
+        {
+            if (DataBank.rec == 1)
+            {
+                dgw.Rows.Add(record.GetInt32(0), record.GetString(1), record.GetInt32(2), record.GetInt32(3), record.GetInt32(4),
+                record.GetInt32(5), RowState.ModifiedNew);
+            }
+            if (DataBank.rec == 2)
+            {
+                dgw.Rows.Add(record.GetInt32(0), record.GetString(1), record.GetString(2), record.GetInt32(3), record.GetInt32(4),
+                record.GetInt32(5), RowState.ModifiedNew);
+            }         
+        }
+        private void Stat(DataGridView dgw) //Метод обновления и заполнения DataGridView
+        {
+            if (DataBank.rec == 1)
+            {
+                dgw.Rows.Clear();
+                string query = $"select * from Stat_atk";
+                SqlCommand command = new SqlCommand(query, db.getConnection());
+                db.openConnection();
+                SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    ReadSingleRowChamp(dgw, reader);
+                }
+                reader.Close();
+            }
+            if (DataBank.rec == 2)
+            {
+                dgw.Rows.Clear();
+                string query = $"select * from Stat_def";
+                SqlCommand command = new SqlCommand(query, db.getConnection());
+                db.openConnection();
+                SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    ReadSingleRowChamp(dgw, reader);
+                }
+                reader.Close();
+            }          
+        }
+        private void Back_Click(object sender, EventArgs e)
+        {
+            MainForm mf = new MainForm();
+            mf.Show();
+            this.Hide();
+        }
+        int atk = 1;
+        private void FormRec_Load(object sender, EventArgs e)
+        {
+            CreateColumnsStat();
+            Stat(StatView);
+            if (DataBank.rec == 1)
+            {
+                label1.Text = "Топ 50 Игроков Среди Атакующих";
+                label2.Visible = false;
+                Bomb.Enabled = false;
+            }
+            if (DataBank.rec == 2)
+            {
+                ATKmenu.Visible = false;
+                label1.Text = "Топ 50 Игроков Среди Вратарей";
+            }
+        }
+        private void Sort(DataGridView dgw)
+        {
+            if (atk == 1)
+            {
+                dgw.Rows.Clear();
+                string query = $"select * from Stat_atk order by Очки desc";
+                SqlCommand command = new SqlCommand(query, db.getConnection());
+                db.openConnection();
+                SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    ReadSingleRowChamp(dgw, reader);
+                }
+                reader.Close();
+            }
+            if (atk == 2)
+            {
+                dgw.Rows.Clear();
+                string query = $"select * from Stat_atk order by Голы desc";
+                SqlCommand command = new SqlCommand(query, db.getConnection());
+                db.openConnection();
+                SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    ReadSingleRowChamp(dgw, reader);
+                }
+                reader.Close();
+            }
+            if (atk == 3)
+            {
+                dgw.Rows.Clear();
+                string query = $"select * from Stat_atk order by Передачи desc";
+                SqlCommand command = new SqlCommand(query, db.getConnection());
+                db.openConnection();
+                SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    ReadSingleRowChamp(dgw, reader);
+                }
+                reader.Close();
+            }
+        }
+        private void Bomb_Click(object sender, EventArgs e)
+        {
+            atk = 1;
+            Bomb.Enabled = false;
+            Snip.Enabled = true;
+            Assist.Enabled = true;
+            Sort(StatView);
+            PlayerSearch.Text = "";
+        }
+
+        private void Snip_Click(object sender, EventArgs e)
+        {
+            atk = 2;
+            Snip.Enabled = false;
+            Bomb.Enabled = true;
+            Assist.Enabled = true;
+            Sort(StatView);
+            PlayerSearch.Text = "";
+        }
+
+        private void Assist_Click(object sender, EventArgs e)
+        {
+            atk = 3;
+            Assist.Enabled = false;
+            Bomb.Enabled = true;
+            Snip.Enabled = true;
+            Sort(StatView);
+            PlayerSearch.Text = "";
+        }
+        private void Search(DataGridView dgw) //Метод поиска по ID
+        {
+            if (DataBank.rec == 1)
+            {
+                string idd = PlayerSearch.Text;
+                dgw.Rows.Clear();
+                string search = $"select * from Stat_atk where Игрок like '" + PlayerSearch.Text + "%'"; //Запрос на поиск
+                SqlCommand com = new SqlCommand(search, db.getConnection());
+                db.openConnection();
+                SqlDataReader reader = com.ExecuteReader();
+                while (reader.Read())
+                {
+                    ReadSingleRowChamp(dgw, reader);
+                }
+                reader.Close();
+            }
+            if (DataBank.rec == 2)
+            {
+                string idd = PlayerSearch.Text;              
+                dgw.Rows.Clear();
+                string search = $"select * from Stat_def where Игрок like '" + PlayerSearch.Text + "%'"; //Запрос на поиск
+                SqlCommand com = new SqlCommand(search, db.getConnection());
+                db.openConnection();
+                SqlDataReader reader = com.ExecuteReader();
+                while (reader.Read())
+                {
+                    ReadSingleRowChamp(dgw, reader);
+                }
+                reader.Close();
+            }
+        }
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (PlayerSearch.Text != "")
+            {               
+                    Search(StatView);
+            }
+            else
+                MessageBox.Show("Введите данные!", "Ошибка",
+                     MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+            Bomb.Enabled = true;
+            Snip.Enabled = true;
+            Assist.Enabled = true;
+        }
+
+        private void Refresh_Click(object sender, EventArgs e)
+        {
+            Stat(StatView);
+            Bomb.Enabled = false;
+            Snip.Enabled = true;
+            Assist.Enabled = true;
+            PlayerSearch.Text = "";
+        }
+    }
+}
+
+
+    class DataBank
+    {
+        //SqlConnection SqlConnection = new SqlConnection(@"Data Source=510-14;Initial Catalog=ФХ_БК_УП;Integrated Security=True");
+        SqlConnection SqlConnection = new SqlConnection(@"Data Source=DESKTOP-9U53OVR;Initial Catalog=ФХ_БК_УП;Integrated Security=True;Encrypt=False");
+        public void openConnection()
+        {
+            if (SqlConnection.State == System.Data.ConnectionState.Closed)
+            {
+                SqlConnection.Open();
+            }
+        }
+        public void closeConnection()
+        {
+            if (SqlConnection.State == System.Data.ConnectionState.Open)
+            {
+                SqlConnection.Close();
+            }
+        }
+        public SqlConnection getConnection()
+        {
+            return SqlConnection;
+        }
+
+        public static int champ;
+        public static int hr;
+        public static int rec;     
+    }     
+}
+}
